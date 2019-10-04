@@ -1,14 +1,12 @@
-**Edit a file, create a new file, and clone from Bitbucket in under 2 minutes**
+## Reference Papers
 
-When you're done, you can delete the content in this README and update the file with details for others getting started with your repository.
+* Multi-class texture analysis in colorectal cancer histology [link](https://www.nature.com/articles/srep27988)
 
-*We recommend that you open this README in another tab as you perform the tasks below. You can [watch our video](https://youtu.be/0ocf7u76WSo) for a full demo of all the steps in this tutorial. Open the video in a new tab to avoid leaving Bitbucket.*
 
 ---
 
-## Edit a file
+## Create a file
 
-You’ll start by editing this README file to learn how to edit a file in Bitbucket.
 
 1. Click **Source** on the left side.
 2. Click the README.md link from the list of files.
