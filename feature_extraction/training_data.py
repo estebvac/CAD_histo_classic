@@ -19,13 +19,11 @@ def __get_features(path, full_images_df, debug=False):
 
     """
     total_images = len(full_images_df)
+    total_features = []
     for img_counter in tqdm(range(0, total_images)):
         [_, features, _] = process_single_image(full_images_df['File'][img_counter], debug)
 
-        if full_images_df['Class'][img_counter] == 'les':
-            features.insert(0, "label", 'les', True)
-        else:
-            features.insert(0, "label", 'nv', True)
+        features.insert(0, "label", full_images_df['Class'][img_counter], True)
 
         img_name = full_images_df['File'][img_counter].split('/')[-1]
         features.insert(0, "Name", img_name, True)

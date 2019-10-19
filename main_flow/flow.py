@@ -1,5 +1,4 @@
 import cv2
-from segmentation.segmentation import *
 from feature_extraction.feature_extraction import extract_features
 from preprocessing.preprocessing import *
 from preprocessing.utils import *
@@ -49,11 +48,11 @@ def process_single_image(filename, debug=False):
 
     """
     img = cv.imread(filename)
-    img_wo_hair, _ = preprocess_and_remove_hair(img)
-    img_superpixel = segment_superpixel(img, debug)
-    roi = segment_image(img_wo_hair, img_superpixel, debug)
-    features = __process_features(img_wo_hair, roi)
-    return [roi, features, img_wo_hair]
+    img_norm, _, _ = normalize_staining(img, debug=debug)
+
+    roi = np.ones_like(img)[:,:,1]
+    features = __process_features(img_norm, roi)
+    return [roi, features, img_norm]
 
 
 def extract_ROI(roi_contour, img,padding = 0.05):

@@ -238,7 +238,7 @@ def extract_features(roi_color, contour, mask):
     lbp = multi_scale_lbp_features(roi_gray)
 
     # Hu Moments
-    hu_moments = feature_hu_moments(contour)
+    # hu_moments = feature_hu_moments(contour)
 
     # Texture: Haralick features using Mahotas (vector 1x13)
     texture_features = get_texture_features(roi_gray, mask)
@@ -249,4 +249,4 @@ def extract_features(roi_color, contour, mask):
     # HOG features
     # hog_features = features_hog (roi_gray)
 
-    return np.transpose(np.concatenate((geometrical_features, hu_moments, lbp, texture_features), axis=0))
+    return np.transpose(np.concatenate((geometrical_features, lbp, texture_features), axis=0))
