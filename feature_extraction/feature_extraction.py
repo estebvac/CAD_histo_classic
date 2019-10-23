@@ -63,14 +63,40 @@ def get_geometrical_features(contour):
     return geom_feat
 
 
-def get_color_based_features(roi_color, mask):
+def get_color_based_features(roi_color):
 
-    #First, convert from RGB to CIEl*a*b*
-    roi_lab = cv.cvtColor(roi_color, cv.COLOR_BGR2LAB)
-    #Separate channels
-    l_channel, a_channel, b_channel = cv.split(roi_lab)
-    #Now cluster channels a and b for 4 clusters, using k-means
-    return
+    roi_color_double = roi_color.astype(float)
+    #Compute color features according to Celebi2007
+    all_color_spaces = np.zeros(( roi_color.shape[0], roi_color.shape[1], 18), dtype = np.float32) #18 because there are 6 color spaces with 3 channels each
+    all_color_spaces[:,:,0:3] = roi_color_double
+    #Compute normalized RGB
+    the_sum = roi_color_double[:,:,2] + roi_color_double[:,:,1] + roi_color_double[:,:,0] + 0.00001
+    all_color_spaces[:,:,3] = roi_color_double[:,:,2]/the_sum*255.0
+    all_color_spaces[:,:,4] = roi_color_double[:,:,1]/the_sum*255.0
+    all_color_spaces[:,:,5] = roi_color_double[:,:,0]/the_sum*255.0
+    #Compute HSV
+    all_color_spaces[:,:,6:9] = cv.cvtColor(roi_color, cv.COLOR_BGR2HSV).astype(np.float32)
+    #Compute CIEluv
+    all_color_spaces[:,:,9:12] = cv.cvtColor(roi_color, cv.COLOR_BGR2Luv).astype(np.float32)
+    #Compute Ohta (I1/2/3)
+    all_color_spaces[:,:,12] = (1/3)*roi_color_double[:,:,2] + (1/3)*roi_color_double[:,:,1] + (1/3)*roi_color_double[:,:,0] 
+    all_color_spaces[:,:,13] = (1/2)*roi_color_double[:,:,2] + (1/2)*roi_color_double[:,:,0] 
+    all_color_spaces[:,:,14] = (-1)*(1/4)*roi_color_double[:,:,2] + (1/2)*roi_color_double[:,:,1] - (1/4)*roi_color_double[:,:,0]
+    #Compute l1/2/3
+    denominator_l = (roi_color_double[:,:,2] - roi_color_double[:,:,1])**2+(roi_color_double[:,:,2] - roi_color_double[:,:,0])**2+(roi_color_double[:,:,1] - roi_color_double[:,:,0])**2 + 0.00001
+    all_color_spaces[:,:,15] = (roi_color_double[:,:,2] - roi_color_double[:,:,1])**2/(denominator_l)
+    all_color_spaces[:,:,16] = (roi_color_double[:,:,2] - roi_color_double[:,:,0])**2/(denominator_l)
+    all_color_spaces[:,:,17] = (roi_color_double[:,:,2] - roi_color_double[:,:,0])**2/(denominator_l)
+
+    #Compute mean and std for each channel of each color space
+    means_and_stds = np.zeros((1,18*2))
+    ii = 0
+    for i in range(all_color_spaces.shape[2]):
+        means_and_stds[0,ii] = np.mean(all_color_spaces[:,:,i])
+        means_and_stds[0,ii+1] = np.std(all_color_spaces[:,:,i])
+        ii += 2
+        
+    return means_and_stds.reshape(means_and_stds.shape[1],)
 
 
 def get_texture_features(roi_gray, mask):
@@ -232,21 +258,15 @@ def extract_features(roi_color, contour, mask):
     geometrical_features = get_geometrical_features(contour)
 
     # Color based features
-    get_color_based_features(roi_color, mask)
+    color_features = get_color_based_features(roi_color)
 
     # LBP
     lbp = multi_scale_lbp_features(roi_gray)
 
-    # Hu Moments
-    # hu_moments = feature_hu_moments(contour)
-
     # Texture: Haralick features using Mahotas (vector 1x13)
     texture_features = get_texture_features(roi_gray, mask)
 
-    # Asymmetry
-    # TODO
-
     # HOG features
-    # hog_features = features_hog (roi_gray)
+    hog_features = features_hog (roi_gray)
 
-    return np.transpose(np.concatenate((geometrical_features, lbp, texture_features), axis=0))
+    return np.transpose(np.concatenate((texture_features, lbp, color_features.T, hog_features), axis=0))
