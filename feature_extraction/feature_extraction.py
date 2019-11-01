@@ -269,7 +269,8 @@ def extract_features(roi_color, contour, mask):
 
     # HOG features
     hog_features = features_hog (roi_gray)
-    return np.transpose(np.concatenate((geometrical_features, lbp, texture_features), axis=0))
+
+    return np.transpose(np.concatenate((texture_features, lbp, color_features.T, hog_features), axis=0))
 
 
 def extract_daisy(roi_color):
@@ -277,4 +278,3 @@ def extract_daisy(roi_color):
     descs = daisy(roi_gray, step=8, radius=16, rings=2, histograms=6,
                              orientations=8, visualize=False)
     return descs.flatten()
-
