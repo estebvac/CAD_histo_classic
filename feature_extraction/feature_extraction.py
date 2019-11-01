@@ -6,6 +6,7 @@ import SimpleITK as sitk
 from math import copysign, log10
 from skimage.feature import hog
 from preprocessing.utils import bring_to_256_levels
+from skimage.feature import daisy
 
 
 def get_elongation(m):
@@ -250,3 +251,12 @@ def extract_features(roi_color, contour, mask):
     # hog_features = features_hog (roi_gray)
 
     return np.transpose(np.concatenate((geometrical_features, lbp, texture_features), axis=0))
+
+
+def extract_daisy(roi_color):
+    roi_gray = cv.cvtColor(roi_color, cv.COLOR_BGR2GRAY)
+    descs = daisy(roi_gray, step=8, radius=16, rings=2, histograms=6,
+                             orientations=8, visualize=False)
+    return descs.flatten()
+
+

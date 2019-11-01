@@ -4,6 +4,7 @@ from main_flow.flow import process_single_image
 from .build_features_file import read_images
 from tqdm import tqdm
 import time
+import numpy as np
 
 
 def __get_features(path, full_images_df, debug=False):
@@ -19,22 +20,25 @@ def __get_features(path, full_images_df, debug=False):
 
     """
     total_images = len(full_images_df)
+    #total_images = 10
     total_features = []
     for img_counter in tqdm(range(0, total_images)):
-        [_, features, _] = process_single_image(full_images_df['File'][img_counter], debug)
+        features = process_single_image(full_images_df['File'][img_counter], debug)
 
         features.insert(0, "label", full_images_df['Class'][img_counter], True)
 
         img_name = full_images_df['File'][img_counter].split('/')[-1]
         features.insert(0, "Name", img_name, True)
         if img_counter == 0:
-            total_features = features
-        else:
-            total_features = pd.concat([total_features, features])
+            total_features = features.to_numpy()#np.zeros((total_images, features.size))
+            total_features = np.repeat(total_features, total_images, axis=0)
+
+        total_features[img_counter, :] = features.to_numpy().reshape(-1)
 
         time.sleep(0.0001)
 
-    return [total_features]
+    df = pd.DataFrame(total_features, columns=features.columns)
+    return [df]
 
 
 def prepate_datasets(dataset_path, output_name, debug=False):
