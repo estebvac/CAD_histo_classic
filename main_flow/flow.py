@@ -1,5 +1,5 @@
 import cv2
-from feature_extraction.feature_extraction import extract_daisy, extract_features
+from feature_extraction.feature_extraction import extract_surf, extract_features
 from preprocessing.preprocessing import *
 from preprocessing.utils import *
 import pandas as pd
@@ -22,11 +22,12 @@ def __process_features(img, roi):
     for roi_counter in np.arange(min(len(contours), 1)):
         roi_color, boundaries = extract_ROI(contours[roi_counter], img)
         roi_bw, _ = extract_ROI(contours[roi_counter], roi)
-        features = extract_features(roi_color, contours[roi_counter], roi_bw)
+        #features = extract_features(roi_color, contours[roi_counter], roi_bw)
         #features = extract_daisy(roi_color)
+        features = extract_surf(roi_color).reshape((1,-1))
 
-    dataframe = pd.DataFrame(features)
-    return dataframe.transpose()
+    #dataframe = pd.DataFrame(features)
+    return features
 
 
 def process_single_image(filename, debug=False):

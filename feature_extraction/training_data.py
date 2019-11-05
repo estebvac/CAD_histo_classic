@@ -20,25 +20,21 @@ def __get_features(path, full_images_df, debug=False):
 
     """
     total_images = len(full_images_df)
-    #total_images = 10
+    meta_data = full_images_df
     total_features = []
     for img_counter in tqdm(range(0, total_images)):
-        features = process_single_image(full_images_df['File'][img_counter], debug)
-
-        features.insert(0, "label", full_images_df['Class'][img_counter], True)
-
-        img_name = full_images_df['File'][img_counter].split('/')[-1]
-        features.insert(0, "Name", img_name, True)
+        img_path = full_images_df['File'][img_counter]
+        features = process_single_image(img_path, debug)
+        meta_data['File'][img_counter] = meta_data['File'][img_counter].split('/')[-1]
         if img_counter == 0:
-            total_features = features.to_numpy()#np.zeros((total_images, features.size))
-            total_features = np.repeat(total_features, total_images, axis=0)
+            total_features_0 = features
+            total_features = np.repeat(total_features_0, total_images, axis=0)
 
-        total_features[img_counter, :] = features.to_numpy().reshape(-1)
+        total_features[img_counter, :] = features
 
         time.sleep(0.0001)
 
-    df = pd.DataFrame(total_features, columns=features.columns)
-    return [df]
+    return total_features, meta_data
 
 
 def prepate_datasets(dataset_path, output_name, debug=False):
@@ -58,7 +54,9 @@ def prepate_datasets(dataset_path, output_name, debug=False):
     """
 
     full_images_df = read_images(dataset_path)
-    print("Preparing training set!\n")
-    [training_features] = __get_features(dataset_path, full_images_df, debug)
-    training_features.to_csv(join(dataset_path, output_name))
-    return training_features
+    print("Preparing " + output_name + " set!\n")
+    total_features, meta_data = __get_features(dataset_path, full_images_df, debug)
+    meta_data.to_csv(join(dataset_path, output_name + ".csv"))
+    numpy_path = join(dataset_path, output_name + ".npy")
+    np.save(numpy_path, total_features)
+    #return training_features

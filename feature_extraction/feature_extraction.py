@@ -278,3 +278,20 @@ def extract_daisy(roi_color):
     descs = daisy(roi_gray, step=8, radius=16, rings=2, histograms=6,
                              orientations=8, visualize=False)
     return descs.flatten()
+
+
+
+def extract_surf(roi_color):
+    gray = cv.cvtColor(roi_color, cv.COLOR_BGR2GRAY)
+    n_kp = 200
+    sift = cv.xfeatures2d.SIFT_create(n_kp)
+    _, des = sift.detectAndCompute(gray, None)
+    descriptor = np.zeros((n_kp, 128), dtype=np.uint8)
+    if des is not None:
+        des = des.astype(np.uint8)
+        if len(des) > n_kp:
+            descriptor= des[:n_kp, :]
+        else:
+            descriptor[:des.shape[0], :] = des
+
+    return descriptor.flatten()
