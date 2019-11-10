@@ -1,11 +1,12 @@
 import cv2
-from feature_extraction.feature_extraction import extract_surf, extract_features
+from feature_extraction.feature_extraction import extract_dense_features, extract_features
 from preprocessing.preprocessing import *
 from preprocessing.utils import *
-import pandas as pd
+from feature_extraction.gabor import gabor_features
+from preprocessing.utils import show_image
 
 
-def __process_features(img, roi):
+def __process_features(img):
     """
     Process the resulting scales of the segmentation
     Parameters
@@ -18,16 +19,12 @@ def __process_features(img, roi):
     dataframe       dataframe of all the ROIs in the image
 
     """
-    _, contours, _ = cv2.findContours(255 * roi, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-    for roi_counter in np.arange(min(len(contours), 1)):
-        roi_color, boundaries = extract_ROI(contours[roi_counter], img)
-        roi_bw, _ = extract_ROI(contours[roi_counter], roi)
-        #features = extract_features(roi_color, contours[roi_counter], roi_bw)
-        #features = extract_daisy(roi_color)
-        features = extract_surf(roi_color).reshape((1,-1))
-
-    #dataframe = pd.DataFrame(features)
-    return features
+    features = extract_features(img, hog=False)
+    #features = extract_dense_features(img, 48)
+    #features_textons = textons_features(img)
+    features_gab = gabor_features(img)
+    all_feat = np.concatenate((features_gab,features))
+    return all_feat
 
 
 def process_single_image(filename, debug=False):
@@ -46,10 +43,8 @@ def process_single_image(filename, debug=False):
 
     """
     img = cv.imread(filename)
-    img_norm, _, _ = normalize_staining(img, debug=debug)
-
-    roi = np.ones_like(img)[:,:,1]
-    features = __process_features(img_norm, roi)
+    #img_norm, _, _ = normalize_staining(img, debug=debug)
+    features = __process_features(img)
     return features
 
 

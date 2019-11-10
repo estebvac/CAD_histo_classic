@@ -22,17 +22,22 @@ def __get_features(path, full_images_df, debug=False):
     total_images = len(full_images_df)
     meta_data = full_images_df
     total_features = []
-    for img_counter in tqdm(range(0, total_images)):
-        img_path = full_images_df['File'][img_counter]
+    pbar = tqdm(range(0, total_images))
+    for img_counter in pbar:
+        file = full_images_df['File'][img_counter]
+        folder = full_images_df['Class'][img_counter]
+        img_path = path + '/' + folder + '/' + file
         features = process_single_image(img_path, debug)
         meta_data['File'][img_counter] = meta_data['File'][img_counter].split('/')[-1]
         if img_counter == 0:
-            total_features_0 = features
+            total_features_0 = features.reshape((1,-1))
             total_features = np.repeat(total_features_0, total_images, axis=0)
 
         total_features[img_counter, :] = features
 
         time.sleep(0.0001)
+    pbar.close()
+    pbar.clear()
 
     return total_features, meta_data
 
